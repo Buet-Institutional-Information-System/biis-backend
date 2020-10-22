@@ -18,8 +18,8 @@ app.use(function (req, res, next) {
 const oracledb = require('oracledb');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let databaseAuth={
-    user          : "hr",
-    password      : "hr",
+    user          : "biis",
+    password      : "biis",
     connectString : ""
 };
 
