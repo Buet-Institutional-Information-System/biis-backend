@@ -117,16 +117,17 @@ app.delete('/delete',async function (req, res) {
 
 
 app.post('/signIn',async function(req,res){
-    let query="select userid,userpassword,username,userlevel,userterm,usersession,bankaccount,hallname,hallstatus,adviser_id,(select name from department d where d.code=department_code) dept from student where userid="+req.body.id+" and userpassword='"+req.body.password+"'";
+    let query="select student_id,psswrd,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd='"+req.body.password+"'";
     console.log(query);
-    //let query='select userid,userpassword,username,userlevel,userterm,usersession,bankaccount,hallname,hallstatus,adviser_id,(select name from department d where d.code=department_code) dept from student where userid=? and userpassword=?';
-    try{ console.log('Hello');
+    //let query='select student_id,psswrd,student_name,level,term,session,hall_name,hall_status,ins_id,(select name from department d where d.code=department_code) dept from student where userid=? and userpassword=?';
+    try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
         console.log(result);
         console.log("returned rows from query: ",result.rows.length);
         res.send(result);
     }catch(e){
+        console.log("Error occured: ",e);
         res.send(e);
     }
 });
@@ -134,7 +135,7 @@ app.post('/signIn',async function(req,res){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.get('/adviser/:id',async function(req,res){
-    let query="select name,designation,(select name from department d where d.code=department_code) dept from adviser where id="+req.params.id;
+    let query="select ins_name,designation,(select dept_name from departments d where d.dept_id=i.dept_id) dept from instructors i where ins_id="+req.params.id;
     //console.log(query);
     try{
         const result=await connection.execute(query);
@@ -143,13 +144,14 @@ app.get('/adviser/:id',async function(req,res){
         console.log("returned rows from query: ",result.rows.length);
         res.send(result);
     }catch(e){
+        console.log(e);
         res.send(e);
     }
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get('/contactInfo/:id',async function(req,res){
-    let query="select phone,email,address from student where userid="+req.params.id;
+    let query="select mobile_number,contact_person_name,contact_person_number,address from students where student_id="+req.params.id;
     //console.log(query);
     try{
         const result=await connection.execute(query);
@@ -165,21 +167,24 @@ app.get('/contactInfo/:id',async function(req,res){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 app.patch('/editInfo',async function(req,res){
-
-    let query="update student set phone='"+req.body.phone+"',email='"+req.body.email+"',address='"+req.body.address+"' where userid="+req.body.id;
+    console.log(req);
+    let query="update students set mobile_number='"+req.body.phone+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.body.id;
     let query2="commit";
-    let query3="select phone,email,address from student where userid="+req.body.id;
+    let query3="select mobile_number,contact_person_name,contact_person_number,address from students where student_id="+req.body.id;
     //console.log(query);
     //console.log(query3);
     try{
         const result=await connection.execute(query);
+        console.log('Updating ',result);
         const result2 = await connection.execute(query2);
+        console.log('Commiting ',result2);
         const result3=await connection.execute(query3);
         console.log("The results found in query: ");
-        console.log(result3);
+        console.log(result3.rows[0]);
         console.log("returned rows from query3: ",result3.rows.length);
         res.send(result3);
     }catch(e){
+        console.log(e);
         res.send(e);
     }
 });
@@ -188,9 +193,9 @@ app.patch('/editInfo',async function(req,res){
 
 app.patch('/password',async function(req,res){
 
-    let query="update student set userpassword='"+req.body.newpassword+"' where userid="+req.body.id+" and userpassword='"+req.body.password+"'";
+    let query="update students set psswrd='"+req.body.newpassword+"' where student_id="+req.body.id+" and psswrd='"+req.body.password+"'";
     let query2="commit";
-    let query3="select userpassword from student where userid="+req.body.id;
+    let query3="select psswrd from students where student_id="+req.body.id;
     //console.log(query);
     try{
         const result=await connection.execute(query);
@@ -209,3 +214,110 @@ app.patch('/password',async function(req,res){
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.get('/viewGrade/:id',async function(req,res){
+    let query="select distinct(term_id) from registration where student_id="+req.params.id+"and obtained_grade_point is not NULL";
+    //console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("The results found in query: ");
+        console.log(result);
+        console.log("returned rows from query: ",result.rows.length);
+        res.send(result);
+    }catch(e){
+        res.send(e);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.get('/showGrade',async function(req,res){
+    console.log(req.query);
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour,(select grade from grades g where g.grade_point=r.obtained_grade_point) obtained_grade,obtained_grade_point from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
+    //console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("The results found in query: ");
+        console.log(result);
+        console.log("returned rows from query: ",result.rows.length);
+        res.send(result);
+    }catch(e){
+        console.log(e);
+        res.send(e);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.get('/registration',async function(req,res){
+    console.log(req.query);
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
+    //console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("returned rows from query: ",result.rows.length);
+
+        if(result.rows.length==0)
+        {
+
+            let query2="select course_id,(select course_title from courses c where c.course_id=t.course_id) course_title,(select credit_hour from courses c where c.course_id=t.course_id) credit_hour from courseinterm t where term_id='"+req.query.term_id+"' and available_dept='"+req.query.available_dept+"'";
+            const result2=await connection.execute(query2);
+            console.log("The results found in query: ");
+            result2.registration=true;
+            console.log(result2);
+            return res.send(result2);
+        }
+        console.log("The results found in query: ");
+        result.registration=false;
+        console.log(result);
+        res.send(result);
+    }catch(e){
+        console.log(e);
+        res.send(e);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.get('/registrationApproval',async function(req,res){
+    console.log(req.query);
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
+    //console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("returned rows from query: ",result.rows.length);
+        console.log("The results found in query: ");
+        console.log(result);
+        res.send(result);
+    }catch(e){
+        console.log(e);
+        res.send(e);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.post('/insertRegistration',async function (req, res) {
+    console.log("Request from client: ", req.body);
+    for (const course of req.body.course_id) {
+        let query="insert into registration values("+req.body.id+",'"+course+"','"+req.body.term_id+"',NULL)";
+        console.log(query);
+        let query2="commit";
+        try{
+            const result=await connection.execute(query);
+            console.log('Inserting ',result);
+            const result2 = await connection.execute(query2);
+            console.log('Commiting ',result2);
+        }catch(e){
+            console.log(e);
+            res.send(e);
+            break;
+        }
+    }
+    res.status(200).send();
+    // let query="insert into regions values("+req.body.id+",'"+req.body.name+"')";
+    // console.log(query);
+    // const result = await connection.execute(query);
+    // console.log("The results found in query: ");
+    // console.log(result);
+    // const result2 = await connection.execute(
+    //     `commit`,
+    // );
+    // console.log('The result found from coomit: ',result2);
+    // res.send(result);
+});
