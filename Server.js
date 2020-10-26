@@ -307,7 +307,7 @@ app.get('/registrationApproval',async function(req,res){
     let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
     //console.log(query);
     let query2="select  sum(c.credit_hour) registered_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+"and r.term_id='"+req.query.term_id+"'";
-    let query3="select  sum(c.credit_hour) credit_hours_earned from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+" and r.term_id<>'"+req.query.term_id+"'";
+    let query3="select  sum(c.credit_hour) credit_hours_earned from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+" and r.term_id<>'"+req.query.term_id+"'and r.obtained_grade_point<>0";
     try{
         const result=await connection.execute(query);
         console.log("returned rows from query: ",result.rows.length);
