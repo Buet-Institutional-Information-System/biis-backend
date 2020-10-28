@@ -2,6 +2,8 @@
 let express = require('express');
 const bodyParser=require('body-parser');
 let app = express();
+const biis = require('./biisdatabase');
+
 app.use(bodyParser.json());
 app.use(express.static('images'));
 app.use(function (req, res, next) {
@@ -14,50 +16,12 @@ app.use(function (req, res, next) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-//SETUP ORACLE /////////////////////////////////////////////////////////////////////////////////////////////
-const oracledb = require('oracledb');
-oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
-let databaseAuth={
-    user          : "biis",
-    password      : "biis",
-    connectString : ""
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 //RUN SERVER////////////////////////////////////////////////////////////////////////////////////////////////
 let server = app.listen(1148, function () {
     console.log("App listening with taaha at http://localhost:",1148)
 });
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//database connection/////////////////////////////////////////////////////////////////////////////////////////
-
-// let connection = await oracledb.getConnection(databaseAuth);
-let connection;
-const database=async function(){
-    try{
-        let pool= await  oracledb.createPool(databaseAuth);
-        connection=await pool.getConnection();
-        console.log("Connection to database established");
-    }catch(err){
-        console.log("Error ",err);
-    }
-}
-database();
-// let connection;
-// oracledb.getConnection(databaseAuth)
-//     .then((res)=>{
-//         console.log("Connection to database established");
-//         connection = res;
-//     })
-//     .catch((e)=>{
-//         console.log("Error");
-//     });
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 //ROUTES////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -111,25 +75,14 @@ app.delete('/delete',async function (req, res) {
     res.send(result);
     //await connection.close();
 });
-////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//Project /////////////////////////////////////////////////////////////////////////////////////////
 
 
 app.post('/signIn',async function(req,res){
-    let query="select student_id,psswrd,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd='"+req.body.password+"'";
-    console.log(query);
-    //let query='select student_id,psswrd,student_name,level,term,session,hall_name,hall_status,ins_id,(select name from department d where d.code=department_code) dept from student where userid=? and userpassword=?';
-    try{
-        const result=await connection.execute(query);
-        console.log("The results found in query: ");
-        console.log(result);
-        console.log("returned rows from query: ",result.rows.length);
-        res.send(result);
-    }catch(e){
-        console.log("Error occured: ",e);
-        res.send(e);
-    }
+
+    let result = await biis.signIn(req.body.id,req.body.password);
+
+    res.send(result);
+
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +104,7 @@ app.get('/adviser/:id',async function(req,res){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.get('/contactInfo/:id',async function(req,res){
-    let query="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.params.id;
+    let query="select mobile_number,contact_person_name,contact_person_number,address from students where student_id="+req.params.id;
     //console.log(query);
     try{
         const result=await connection.execute(query);
@@ -168,9 +121,9 @@ app.get('/contactInfo/:id',async function(req,res){
 
 app.patch('/editInfo',async function(req,res){
     console.log(req);
-    let query="update students set mobile_number='"+req.body.phone+"',email='"+req.body.email+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.body.id;
+    let query="update students set mobile_number='"+req.body.phone+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.body.id;
     let query2="commit";
-    let query3="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.body.id;
+    let query3="select mobile_number,contact_person_name,contact_person_number,address from students where student_id="+req.body.id;
     //console.log(query);
     //console.log(query3);
     try{
