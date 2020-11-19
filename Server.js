@@ -117,7 +117,7 @@ app.delete('/delete',async function (req, res) {
 
 
 app.post('/signIn',async function(req,res){
-    let query="select student_id,psswrd,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd='"+req.body.password+"'";
+    let query="select student_id,psswrd,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd=hash_password('"+req.body.password+"')";
     console.log(query);
     //let query='select student_id,psswrd,student_name,level,term,session,hall_name,hall_status,ins_id,(select name from department d where d.code=department_code) dept from student where userid=? and userpassword=?';
     try{
@@ -202,7 +202,7 @@ app.patch('/password',async function(req,res){
         console.log("The results found in query: ");
         console.log(result);
         const result2 = await connection.execute(query2);
-        console.log(query2);
+        console.log(result2);
         const result3=await connection.execute(query3);
         console.log("The results found in query: ");
         console.log(result3);
