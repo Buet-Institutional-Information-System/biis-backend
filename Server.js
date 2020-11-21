@@ -117,7 +117,7 @@ app.delete('/delete',async function (req, res) {
 
 
 app.post('/signIn',async function(req,res){
-    let query="select student_id,psswrd,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd=hash_password('"+req.body.password+"')";
+    let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id+" and psswrd=hash_password('"+req.body.password+"')";
     console.log(query);
     //let query='select student_id,psswrd,student_name,level,term,session,hall_name,hall_status,ins_id,(select name from department d where d.code=department_code) dept from student where userid=? and userpassword=?';
     try{
@@ -193,7 +193,7 @@ app.patch('/editInfo',async function(req,res){
 
 app.patch('/password',async function(req,res){
 
-    let query="update students set psswrd='"+req.body.newpassword+"' where student_id="+req.body.id+" and psswrd='"+req.body.password+"'";
+    let query="update students set psswrd='"+req.body.newpassword+"' where student_id="+req.body.id+" and psswrd=hash_password('"+req.body.password+"')";
     let query2="commit";
     let query3="select psswrd from students where student_id="+req.body.id;
     //console.log(query);
