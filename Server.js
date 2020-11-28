@@ -346,3 +346,55 @@ app.post('/insertRegistration',async function (req, res) {
     }
     res.status(200).send();
 });
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+app.get('/termids',async function(req,res){
+    console.log(req.query);
+    let query="select distinct(term_id) from registration where obtained_grade_point is null and  student_id="+req.query.id;
+    //console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("returned rows from query: ",result.rows.length);
+        res.send(result);
+    }catch(e){
+        console.log(e);
+        res.send(e);
+    }
+});
+
+///////////////////////////////////////////////////////////////////////////////////////////
+app.get('/courseids',async function(req,res){
+    console.log(req.query);
+    let query="select course_id from registration where obtained_grade_point is null and  student_id="+req.query.id+" and term_id='"+req.query.termid+"'";
+    console.log(query);
+    try{
+        const result=await connection.execute(query);
+        console.log("returned rows from query: ",result.rows.length);
+        res.send(result);
+    }catch(e){
+        console.log(e);
+        res.send(e);
+    }
+});
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+app.patch('/updateGrade',async function (req, res) {
+    console.log("Request from client: ", req.body);
+    for (const course of req.body.courses) {
+        let query="update registration set obtained_grade_point="+course.grade+" where student_id="+req.body.id+" and course_id='"+course.id+"' and term_id='"+req.body.term_id+"'";
+        console.log(query);
+        let query2="commit";
+        try{
+            const result=await connection.execute(query);
+            console.log('Inserting ',result);
+            const result2 = await connection.execute(query2);
+            console.log('Commiting ',result2);
+        }catch(e){
+            console.log(e);
+            res.send(e);
+            break;
+        }
+    }
+    res.status(200).send();
+});
