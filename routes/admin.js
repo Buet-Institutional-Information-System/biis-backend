@@ -1,0 +1,40 @@
+const express = require('express');
+const router = express.Router();
+const adminController = require('../controllers/admin');
+router.post(
+    '/student',
+    adminController.postStudent
+);
+router.patch(
+    '/updateGrade',
+    adminController.patchUpdateGrade
+);
+router.delete(
+    '/student',
+    adminController.deleteStudent
+)
+router.post(
+    '/teacher',
+    adminController.postTeacher
+);
+router.patch(
+    '/updateDesignation',
+    adminController.patchUpdateDesignation
+);
+router.delete(
+    '/teacher',
+    adminController.deleteTeacher
+)
+router.get(
+    '/engDepts',
+    adminController.getEngDepts
+)
+router.get(
+    '/depts',
+    adminController.getDepts
+)
+router.get(
+    '/terms',
+    adminController.getTerms
+)
+module.exports=router;
