@@ -1,5 +1,6 @@
 const oracledb = require('oracledb');
 const database = require('../database/dbPool').database;
+const bcrypt = require('bcryptjs');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let connection;
 const initialize=async function(){
@@ -14,7 +15,9 @@ const initialize=async function(){
 }
 initialize();
 exports.postStudent=async(req,res,next)=>{
-    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A',hash_password('"+req.body.password+"'),'N/A')";
+    req.body.password=await bcrypt.hash(req.body.password, 12);
+    console.log(req.body.password);
+    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A','"+req.body.password+"','N/A')";
     console.log(query);
     let query2="commit";
     try{

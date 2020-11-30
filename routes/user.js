@@ -1,45 +1,55 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user');
+const auth = require('../middleware/auth');
 
-router.get(
+router.post(
     '/signIn',
-    userController.getSignIn
+    userController.postSignIn
 );
 router.get(
-    '/adviser/:id',
-    userController.getAdviser
+    '/adviserInfo',
+    auth,
+    userController.getAdviserInfo
 );
 router.get(
-   '/contactInfo/:id',
+   '/contactInfo',
+    auth,
     userController.getContactInfo
 )
 router.patch(
     '/editInfo',
+    auth,
     userController.patchEditInfo
 );
 router.patch(
     '/password',
+    auth,
     userController.patchPassword
 );
 router.get(
-    '/viewGrade/:id',
+    '/viewGrade',
+    auth,
     userController.getViewGrade
 );
 router.get(
     '/showGrade',
+    auth,
     userController.getShowGrade
 );
 router.get(
     '/registration',
+    auth,
     userController.getRegistration
 );
 router.get(
     '/registrationApproval',
+    auth,
     userController.getRegistrationApproval
 );
 router.post(
     '/insertRegistration',
+    auth,
     userController.postInsertRegistration
 );
 module.exports=router;

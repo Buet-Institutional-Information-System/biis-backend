@@ -1,5 +1,7 @@
 const oracledb = require('oracledb');
 const database = require('../database/dbPool').database;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let connection;
 const initialize=async function(){
@@ -13,13 +15,32 @@ const initialize=async function(){
     }
 }
 initialize();
-exports.getSignIn = async (req, res, next) => {
+exports.postSignIn = async (req, res, next) => {
     console.log(req.query);
-    let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.query.id+" and psswrd=hash_password('"+req.query.password+"')";
+    let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id;
+    let query2="select psswrd from students where student_id="+req.body.id;
     try{
+        const result2=await connection.execute(query2);
+        console.log(result2);
+        let check=await  bcrypt.compare(req.body.password, result2.rows[0].PSSWRD);
+        //console.log(check);
+        if(!check){
+            return res.status(400).send();
+        }
         const result=await connection.execute(query);
         console.log("The results found in query: ");
         console.log(result);
+        if(result.rows.length!=0){
+            const token = jwt.sign(
+                {
+                    id: result.rows[0].STUDENT_ID,
+                    name: result.rows[0].STUDENT_NAME
+                },
+                'biis',
+            );
+            result.token=token;
+            //console.log("token: ",token);
+        }
         console.log("returned rows from query: ",result.rows.length);
         res.send(result);
     }catch(e){
@@ -27,8 +48,11 @@ exports.getSignIn = async (req, res, next) => {
         res.send(e);
     }
 };
-exports.getAdviser=async(req,res,next)=>{
-    let query="select ins_name,designation,(select dept_name from departments d where d.dept_id=i.dept_id) dept from instructors i where ins_id="+req.params.id;
+exports.getAdviserInfo=async(req,res,next)=>{
+    //console.log("inside adviser");
+    //console.log("req.id: ",req.id);
+
+    let query="select ins_name,designation,(select dept_name from departments d where d.dept_id=i.dept_id) dept from instructors i where ins_id="+req.query.id;
     try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
@@ -41,7 +65,9 @@ exports.getAdviser=async(req,res,next)=>{
     }
 };
 exports.getContactInfo=async(req,res,next)=>{
-    let query="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.params.id;
+    //console.log("req.query: ",req.query);
+    //console.log("req.params: ",req.params);
+    let query="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.id;
     try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
@@ -53,7 +79,7 @@ exports.getContactInfo=async(req,res,next)=>{
     }
 };
 exports.patchEditInfo=async(req,res,next)=>{
-    let query="update students set mobile_number='"+req.body.phone+"',email='"+req.body.email+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.body.id;
+    let query="update students set mobile_number='"+req.body.phone+"',email='"+req.body.email+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.id;
     let query2="commit";
     let query3="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.body.id;
     try{
@@ -72,26 +98,31 @@ exports.patchEditInfo=async(req,res,next)=>{
     }
 }
 exports.patchPassword=async(req,res,next)=>{
-    let query="update students set psswrd='"+req.body.newpassword+"' where student_id="+req.body.id+" and psswrd=hash_password('"+req.body.password+"')";
+    req.body.newpassword=await bcrypt.hash(req.body.newpassword, 12);
+    let query="update students set psswrd='"+req.body.newpassword+"' where student_id="+req.id;
     let query2="commit";
-    let query3="select psswrd from students where student_id="+req.body.id;
+    let query3="select psswrd from students where student_id="+req.id;
     try{
+        const result3=await connection.execute(query3);
+        let check=await bcrypt.compare(req.body.password, result3.rows[0].PSSWRD);
+        if(!check){
+            return res.status(400).send();
+        }
+        console.log("The results found in query: ");
+        console.log(result3);
         const result=await connection.execute(query);
         console.log("The results found in query: ");
         console.log(result);
         const result2 = await connection.execute(query2);
         console.log(result2);
-        const result3=await connection.execute(query3);
-        console.log("The results found in query: ");
-        console.log(result3);
-        console.log("returned rows from query2: ",result3.rows.length);
+        console.log("returned rows from query2: ",result2.rows.length);
         res.send(result3);
     }catch(e){
         res.send(e);
     }
 };
 exports.getViewGrade=async(req,res,next)=>{
-    let query="select distinct(term_id) from registration where student_id="+req.params.id+"and obtained_grade_point is not NULL";
+    let query="select distinct(term_id) from registration where student_id="+req.id+"and obtained_grade_point is not NULL";
     try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
@@ -107,12 +138,12 @@ exports.getViewGrade=async(req,res,next)=>{
     }
 };
 exports.getShowGrade=async(req,res,next)=> {
-    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour,(select grade from grades g where g.grade_point=r.obtained_grade_point) obtained_grade,obtained_grade_point from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
-    let query2="select  sum(c.credit_hour) registered_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+"and r.term_id='"+req.query.term_id+"'";
-    let query3="select  sum(c.credit_hour) earned_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+"and r.term_id='"+req.query.term_id+"' and r.obtained_grade_point<>0";
-    let query4="select  sum(c.credit_hour) total_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+" and r.obtained_grade_point<>0";
-    let query5="select  sum(c.credit_hour*r.obtained_grade_point) gpa  from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+"and r.term_id='"+req.query.term_id+"'";
-    let query6="select  sum(c.credit_hour*r.obtained_grade_point) cgpa  from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id;
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour,(select grade from grades g where g.grade_point=r.obtained_grade_point) obtained_grade,obtained_grade_point from registration r where student_id="+req.id+"and term_id='"+req.query.term_id+"'";
+    let query2="select  sum(c.credit_hour) registered_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+"and r.term_id='"+req.query.term_id+"'";
+    let query3="select  sum(c.credit_hour) earned_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+"and r.term_id='"+req.query.term_id+"' and r.obtained_grade_point<>0";
+    let query4="select  sum(c.credit_hour) total_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+" and r.obtained_grade_point<>0";
+    let query5="select  sum(c.credit_hour*r.obtained_grade_point) gpa  from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+"and r.term_id='"+req.query.term_id+"'";
+    let query6="select  sum(c.credit_hour*r.obtained_grade_point) cgpa  from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id;
     try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
@@ -142,7 +173,7 @@ exports.getShowGrade=async(req,res,next)=> {
     }
 };
 exports.getRegistration=async(req,res,next)=> {
-    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.id+"and term_id='"+req.query.term_id+"'";
     try{
         const result=await connection.execute(query);
         console.log("returned rows from query: ",result.rows.length);
@@ -172,9 +203,9 @@ exports.getRegistration=async(req,res,next)=> {
     }
 };
 exports.getRegistrationApproval=async(req,res,next)=> {
-    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.query.id+"and term_id='"+req.query.term_id+"'";
-    let query2="select  sum(c.credit_hour) registered_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+"and r.term_id='"+req.query.term_id+"'";
-    let query3="select  sum(c.credit_hour) credit_hours_earned from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.query.id+" and r.term_id<>'"+req.query.term_id+"'and r.obtained_grade_point<>0";
+    let query="select course_id,(select course_title from courses c where c.course_id=r.course_id) course_title,(select credit_hour from courses c where c.course_id=r.course_id) credit_hour from registration r where student_id="+req.id+"and term_id='"+req.query.term_id+"'";
+    let query2="select  sum(c.credit_hour) registered_credit_hours from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+"and r.term_id='"+req.query.term_id+"'";
+    let query3="select  sum(c.credit_hour) credit_hours_earned from registration r join courses c on(r.course_id=c.course_id) where r.student_id="+req.id+" and r.term_id<>'"+req.query.term_id+"'and r.obtained_grade_point<>0";
     try{
         const result=await connection.execute(query);
         console.log("returned rows from query: ",result.rows.length);
@@ -194,7 +225,7 @@ exports.getRegistrationApproval=async(req,res,next)=> {
 };
 exports.postInsertRegistration=async(req,res,next)=> {
     for (const course of req.body.course_id) {
-        let query = "insert into registration values(" + req.body.id + ",'" + course + "','" + req.body.term_id + "',NULL)";
+        let query = "insert into registration values(" + req.id + ",'" + course + "','" + req.body.term_id + "',NULL)";
         console.log(query);
         let query2 = "commit";
         try {
