@@ -7,6 +7,16 @@ router.post(
     '/signIn',
     userController.postSignIn
 );
+router.post(
+    '/logOut',
+    auth,
+    userController.postLogOut
+);
+router.get(
+    '/signIn',
+    auth,
+    userController.getSignIn
+)
 router.get(
     '/adviserInfo',
     auth,

@@ -11,12 +11,11 @@ const initialize=async function(){
     }
     catch(e)
     {
-        console.log("error");
+        console.log("error user");
     }
 }
 initialize();
 exports.postSignIn = async (req, res, next) => {
-    console.log(req.query);
     let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.body.id;
     let query2="select psswrd from students where student_id="+req.body.id;
     try{
@@ -40,14 +39,49 @@ exports.postSignIn = async (req, res, next) => {
             );
             result.token=token;
             //console.log("token: ",token);
+            let query3="update students set token='"+result.token+"' where student_id="+req.body.id;
+            const result3=await connection.execute(query3);
+            console.log(result3)
+            let query4="commit";
+            const result4=await connection.execute(query4);
+            console.log(result4);
         }
-        console.log("returned rows from query: ",result.rows.length);
+        console.log("returned rows from query: ",result.rows);
         res.send(result);
     }catch(e){
         console.log("Error occured: ",e);
         res.send(e);
     }
-};
+}
+exports.postLogOut=async(req,res,next)=>{
+    let query="update students set token=null where student_id="+req.id;
+    let query2="commit";
+    try{
+        const result=await connection.execute(query);
+        console.log(result);
+        const result2=await connection.execute(query2);
+        console.log(result2);
+        res.status(200).send();
+    }catch(e){
+        res.send(e);
+    }finally{
+
+    }
+
+}
+exports.getSignIn = async (req, res, next) => {
+    let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.id;
+    try{
+        const result=await connection.execute(query);
+        console.log("The results found in query: ");
+        console.log(result);
+        console.log("returned rows from query: ",result.rows);
+        res.send(result);
+    }catch(e){
+        console.log("Error occured: ",e);
+        res.send(e);
+    }
+}
 exports.getAdviserInfo=async(req,res,next)=>{
     //console.log("inside adviser");
     //console.log("req.id: ",req.id);
@@ -63,7 +97,7 @@ exports.getAdviserInfo=async(req,res,next)=>{
         console.log(e);
         res.send(e);
     }
-};
+}
 exports.getContactInfo=async(req,res,next)=>{
     //console.log("req.query: ",req.query);
     //console.log("req.params: ",req.params);

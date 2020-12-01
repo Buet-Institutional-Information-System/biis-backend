@@ -1,6 +1,9 @@
 const oracledb = require('oracledb');
 const database = require('../database/dbPool').database;
 const bcrypt = require('bcryptjs');
+const multer = require('multer');
+const path = require('path');
+const fs=require('fs');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let connection;
 const initialize=async function(){
@@ -10,14 +13,18 @@ const initialize=async function(){
     }
     catch(e)
     {
-        console.log("error");
+        console.log("error admin");
     }
 }
 initialize();
+const clearImage= filePath => {
+    //filePath = path.join(__dirname, '..', filePath);
+    fs.unlink(filePath, err => console.log(err));
+};
 exports.postStudent=async(req,res,next)=>{
     req.body.password=await bcrypt.hash(req.body.password, 12);
     console.log(req.body.password);
-    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A','"+req.body.password+"','N/A')";
+    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A','"+req.body.password+"',null)";
     console.log(query);
     let query2="commit";
     try{
@@ -55,6 +62,8 @@ exports.deleteStudent=async(req,res,next)=>{
         console.log('delete ',result);
         const result2=await connection.execute(query2);
         console.log(result2);
+        const filePath=path.join(__dirname, '..','images','student',req.body.id.toString()+'.jpg')
+        clearImage(filePath);
         const result3=await connection.execute(query3);
         console.log(result3);
         res.status(200).send();
@@ -101,6 +110,8 @@ exports.deleteTeacher=async(req,res,next)=>{
         console.log('delete ',result);
         const result2=await connection.execute(query2);
         console.log(result2);
+        const filePath=path.join(__dirname, '..','images','adviser',req.body.id.toString()+'.jpg')
+        clearImage(filePath);
         res.status(200).send();
     }catch(e){
         console.log(e);
