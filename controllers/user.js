@@ -2,6 +2,7 @@ const oracledb = require('oracledb');
 const database = require('../database/dbPool').database;
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator/check');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let connection;
 const initialize=async function(){
@@ -156,14 +157,14 @@ exports.patchPassword=async(req,res,next)=>{
     }
 };
 exports.getViewGrade=async(req,res,next)=>{
-    let query="select distinct(term_id) from registration where student_id="+req.id+"and obtained_grade_point is not NULL";
+    let query="select distinct(term_id) from registration where student_id="+req.id+"and obtained_grade_point is not NULL and published=1 order by term_id asc";
     try{
         const result=await connection.execute(query);
         console.log("The results found in query: ");
         result.rows.forEach((row,index)=>{
             result.rows[index]=row.TERM_ID;
-        });
-        result.rows.sort();
+        });/*
+        result.rows.sort();*/
         console.log(result.rows);
         console.log("returned rows from query: ",result.rows.length);
         res.send(result);
@@ -259,7 +260,7 @@ exports.getRegistrationApproval=async(req,res,next)=> {
 };
 exports.postInsertRegistration=async(req,res,next)=> {
     for (const course of req.body.course_id) {
-        let query = "insert into registration values(" + req.id + ",'" + course + "','" + req.body.term_id + "',NULL)";
+        let query = "insert into registration values(" + req.id + ",'" + course + "','" + req.body.term_id + "',NULL,0)";
         console.log(query);
         let query2 = "commit";
         try {
