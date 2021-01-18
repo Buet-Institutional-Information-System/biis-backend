@@ -38,63 +38,29 @@ const upload=multer({
     fileFilter
 });
 router.post(
-    '/student',[
-        body('name')
-            .trim()
-            .isLength({min:4})
-            .withMessage('Please insert valid name'),
-        body('term','Please insert a valid term')
-            .trim()
-            .isLength({min:3}),
-        body('password','Password should not be empty, minimum eight characters, at least one letter, one number')
-            .trim()
-            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i)
-    ],
+    '/student',
     upload.single('studentImage'),
     adminController.postStudent
 );
 router.patch(
-    '/updateGrade',[
-        body('term_id','Enter valid term id')
-            .trim()
-            .isLength({min:3}),
-        body('course_id','Enter valid course id')
-            .trim()
-            .isLength({min:3}),
-        body('grade','Enter valid grade')
-            .isFloat({min:0,max:4})
-    ],
+    '/updateGrade',
     adminController.patchUpdateGrade
 );
+router.patch(
+    '/updatePublish',
+    adminController.patchUpdatePublish
+)
 router.delete(
     '/student',
     adminController.deleteStudent
 )
 router.post(
-    '/teacher',[
-        check('name')
-            .trim()
-            .isLength({min:4})
-            .withMessage('Please insert valid name'),
-        check('dept')
-            .trim()
-            .isLength({min:2})
-            .withMessage('Please insert valid dept'),
-        check('designation')
-            .trim()
-            .isLength({min:4})
-            .withMessage('Please insert valid designation'),
-    ],
+    '/teacher',
     upload.single('adviserImage'),
     adminController.postTeacher
 );
 router.patch(
-    '/updateDesignation',[
-        body('designation')
-            .trim()
-            .isLength({min:4})
-            .withMessage('Please insert valid designation'),
-    ],
+    '/updateDesignation',
     adminController.patchUpdateDesignation
 );
 router.delete(

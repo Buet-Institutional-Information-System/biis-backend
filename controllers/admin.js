@@ -4,7 +4,6 @@ const bcrypt = require('bcryptjs');
 const multer = require('multer');
 const path = require('path');
 const fs=require('fs');
-const { validationResult } = require('express-validator/check');
 oracledb.outFormat = oracledb.OUT_FORMAT_OBJECT;
 let connection;
 const initialize=async function(){
@@ -23,13 +22,9 @@ const clearImage= filePath => {
     fs.unlink(filePath, err => console.log(err));
 };
 exports.postStudent=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     req.body.password=await bcrypt.hash(req.body.password, 12);
     console.log(req.body.password);
-    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A','"+req.body.password+"',null)";
+    let query="insert into students values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.term_id+"',"+req.body.ins+",'"+req.body.hall+"','"+req.body.hallStatus+"','N/A','N/A','N/A','N/A','N/A','"+req.body.password+"',null)";
     console.log(query);
     let query2="commit";
     try{
@@ -44,10 +39,6 @@ exports.postStudent=async(req,res,next)=>{
     }
 }
 exports.patchUpdateGrade=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     let query="update registration set obtained_grade_point="+req.body.grade+" where student_id="+req.body.id+" and term_id='"+req.body.term_id+"' and course_id='"+req.body.course_id+"'";
     let query2="commit";
     try{
@@ -62,10 +53,6 @@ exports.patchUpdateGrade=async(req,res,next)=>{
     }
 }
 exports.patchUpdatePublish=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     let query="update registration set obtained_grade_point=0  where obtained_grade_point is null";
     let query3="update registration set published=1";
     let query2="commit";
@@ -83,10 +70,6 @@ exports.patchUpdatePublish=async(req,res,next)=>{
     }
 }
 exports.deleteStudent=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     let query="delete from registration where student_id="+req.body.id;
     let query2="delete from students where student_id="+req.body.id;
     let query3="commit";
@@ -107,10 +90,6 @@ exports.deleteStudent=async(req,res,next)=>{
     }
 }
 exports.postTeacher=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     let query="insert into instructors values("+req.body.id+",'"+req.body.name+"','"+req.body.dept+"','"+req.body.designation+"','N/A')";
     console.log(query);
     let query2="commit";
@@ -126,10 +105,6 @@ exports.postTeacher=async(req,res,next)=>{
     }
 }
 exports.patchUpdateDesignation=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     let query="update instructors set designation='"+req.body.designation+"' where ins_id="+req.body.id;
     let query2="commit"
     try{
@@ -144,10 +119,6 @@ exports.patchUpdateDesignation=async(req,res,next)=>{
     }
 }
 exports.deleteTeacher=async(req,res,next)=>{
-    const errors = validationResult(req);
-    if (!errors.isEmpty()){
-        return res.status(400).send(errors);
-    }
     console.log(req.body);
     let query="delete from instructors where ins_id="+req.body.id;
     let query2="commit";

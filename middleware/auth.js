@@ -15,7 +15,7 @@ const initialize=async function(){
 }
 initialize();
 module.exports = async (req, res, next) => {
-    const token = req.body.token || req.query.token;
+    const token = req.body.token || req.query.token || req.params.token;
     //console.log('token: ',token);
     let decodedToken;
     try {

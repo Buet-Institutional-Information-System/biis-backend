@@ -1,10 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/admin');
+const validator = require('../middleware/validator');
 const multer = require('multer');
-const { check, body,params,query } = require('express-validator/check');
-//let name='Sumaiya azad';
-//console.log(name.split(' ')[0][0].toUpperCase()+name.split(' ')[0].substr(1),name.split(' ')[1].toUpperCase())
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         if(req.body.designation){
@@ -40,16 +38,18 @@ const upload=multer({
 router.post(
     '/student',
     upload.single('studentImage'),
+    validator,
     adminController.postStudent
 );
 router.patch(
     '/updateGrade',
+    validator,
     adminController.patchUpdateGrade
 );
 router.patch(
     '/updatePublish',
     adminController.patchUpdatePublish
-)
+);
 router.delete(
     '/student',
     adminController.deleteStudent
@@ -57,10 +57,12 @@ router.delete(
 router.post(
     '/teacher',
     upload.single('adviserImage'),
+    validator,
     adminController.postTeacher
 );
 router.patch(
     '/updateDesignation',
+    validator,
     adminController.patchUpdateDesignation
 );
 router.delete(
