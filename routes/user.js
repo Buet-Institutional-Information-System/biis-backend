@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/user');
 const auth = require('../middleware/auth');
+const validator=require('../middleware/validator');
 const { check, body,params,query } = require('express-validator/check');
 router.post(
     '/signIn',
@@ -30,11 +31,13 @@ router.get(
 router.patch(
     '/editInfo',
     auth,
+    validator,
     userController.patchEditInfo
 );
 router.patch(
     '/password',
     auth,
+    validator,
     userController.patchPassword
 );
 router.get(

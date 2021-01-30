@@ -25,6 +25,7 @@ exports.postSignIn = async (req, res, next) => {
         let check=await  bcrypt.compare(req.body.password, result2.rows[0].PSSWRD);
         //console.log(check);
         if(!check){
+            console.log("Password incorrect");
             return res.status(400).send();
         }
         const result=await connection.execute(query);

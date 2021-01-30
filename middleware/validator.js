@@ -20,7 +20,10 @@ module.exports =[
             .withMessage('Please insert valid designation'),
         check('password','Password should not be empty, minimum eight characters, at least one letter, one number')
             .trim()
-            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/i),
+            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/i),
+        check('newpassword','Password should not be empty, minimum eight characters, at least one letter, one number')
+        .trim()
+        .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/i),
         check('term_id','Please insert a valid term')
             .trim()
             .isLength({min:3}),
@@ -29,6 +32,9 @@ module.exports =[
             .isLength({min:3}),
         check('grade','Enter valid grade')
             .isFloat({min:0,max:4}),
+        check('email','Enter valid email')
+            .isEmail()
+            .normalizeEmail(),
         async(req,res,next)=> {
             let errors = validationResult(req);
             errors=errors["errors"];
