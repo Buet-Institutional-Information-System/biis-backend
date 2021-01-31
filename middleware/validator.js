@@ -50,6 +50,7 @@ module.exports =[
             if (errors.length!==0) {
                 if(req.method=='POST'){
                     console.log("has error");
+                    console.log(errors);
                     let filePath;
                     if(req.body.designation){
                         filePath=path.join(__dirname, '..','images','adviser',req.body.id.toString()+'.jpg');
@@ -57,6 +58,7 @@ module.exports =[
                     filePath=path.join(__dirname, '..','images','student',req.body.id.toString()+'.jpg')
                     fs.unlink(filePath, err => console.log(err));
                 }
+                console.log("validation errors: ",errors);
                 return res.status(400).send(errors);
             }
             else{

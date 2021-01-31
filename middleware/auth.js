@@ -10,7 +10,7 @@ const initialize=async function(){
     }
     catch(e)
     {
-        console.log("error");
+        console.log("error in auth.js. Failed to get connection with oracle db");
     }
 }
 initialize();
