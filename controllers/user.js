@@ -22,12 +22,12 @@ exports.postSignIn = async (req, res, next) => {
     let query2="select psswrd from students where student_id="+req.body.id;
     try{
         const result2=await connection.execute(query2);
-        console.log(result2);
+        //console.log(result2);
         let check=await  bcrypt.compare(req.body.password, result2.rows[0].PSSWRD);
         //console.log(check);
         if(!check){
             console.log("Password incorrect");
-            return res.status(400).send();
+            res.status(400).send({message:"Please enter valid id or password."});
         }
         const result=await connection.execute(query);
         //console.log("The results found in query: ");
@@ -49,11 +49,12 @@ exports.postSignIn = async (req, res, next) => {
             const result4=await connection.execute(query4);
             //console.log(result4);
         }
-        //console.log("returned rows from query: ",result.rows);
-        res.send(result);
+        // console.log("returned rows from query: ",result.rows);
+        res.status(200).send({...result,message:"LogIn successful!"});
+
     }catch(e){
         console.log("postSignIn error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Please enter valid id and passowrd."});
     }
 }
 exports.postLogOut=async(req,res,next)=>{
@@ -65,29 +66,28 @@ exports.postLogOut=async(req,res,next)=>{
         //console.log(result);
         const result2=await connection.execute(query2);
         //console.log(result2);
-
         res.status(200).send("logout");
-        console.log("logout successful");
-    }catch(e){
-        console.log("postLogOut error: ",e);
-        res.send(e);
-    }finally{
-
+        res.status(200).send({message:"logout successful"});
+    }catch(e) {
+        console.log("postLogOut error: ", e);
+        res.status(400).send({...e, message: "LogOut Failed."});
     }
 
 }
 exports.getSignIn = async (req, res, next) => {
     console.log("inside getSignIn");
-    let query="select student_id,student_name,term_id,dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,hall_name,hall_status,ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.id;
+    //console.log("getSignIn req id: ",req.id);
+    let query="select s.student_id,s.student_name,s.term_id,s.dept_id,(select lvl from academic_term a where a.term_id=s.term_id) lvl,(select trm from academic_term a where a.term_id=s.term_id) trm,(select sssn from academic_term a where a.term_id=s.term_id) sssn,s.hall_name,s.hall_status,s.ins_id,(select dept_name from departments d where d.dept_id=s.dept_id) dept_name from students s where student_id="+req.id;
+    //console.log("getSignIn query: ",query);
     try{
         const result=await connection.execute(query);
         //console.log("The results found in query: ");
         //console.log(result);
         //console.log("returned rows from query: ",result.rows);
-        res.send(result);
+        res.status(200).send({...result,message:"Auto LogIn successful!"});
     }catch(e){
         console.log("getSignIn error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Auto LogIn Failed."});
     }
 }
 exports.getAdviserInfo=async(req,res,next)=>{
@@ -98,10 +98,10 @@ exports.getAdviserInfo=async(req,res,next)=>{
         //console.log("The results found in query: ");
         //console.log(result);
         //console.log("returned rows from query: ",result.rows.length);
-        res.send(result);
+        res.status(200).send({...result,message:"Fetched Adviser Info succesfully!"});
     }catch(e){
         console.log("getAdviserInfo error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch Adviser Info."});
     }
 }
 exports.getContactInfo=async(req,res,next)=>{
@@ -112,17 +112,17 @@ exports.getContactInfo=async(req,res,next)=>{
         //console.log("The results found in query: ");
         //console.log(result);
         //console.log("returned rows from query: ",result.rows.length);
-        res.send(result);
+        res.status(200).send({...result,message:"Fetched Contact Info succesfully!"});
     }catch(e){
         console.log("getContactInfo error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch Contact Info."});
     }
 };
 exports.patchEditInfo=async(req,res,next)=>{
     console.log("inside patchEditInfo");
     let query="update students set mobile_number='"+req.body.phone+"',email='"+req.body.email+"',contact_person_name='"+req.body.contact_person_name+"',contact_person_number='"+req.body.contact_person_number+"',address='"+req.body.address+"' where student_id="+req.id;
     let query2="commit";
-    let query3="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.body.id;
+    let query3="select mobile_number,email,contact_person_name,contact_person_number,address from students where student_id="+req.id;
     try{
         const result=await connection.execute(query);
         //console.log('Updating ',result);
@@ -132,10 +132,10 @@ exports.patchEditInfo=async(req,res,next)=>{
         //console.log("The results found in query: ");
         //console.log(result3.rows[0]);
         //console.log("returned rows from query3: ",result3.rows.length);
-        res.send(result3);
+        res.status(200).send({...result3,message:"Updated contact info successfully!"});
     }catch(e){
         console.log("patchEditInfo error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Contact info update failed."});
     }
 }
 exports.patchPassword=async(req,res,next)=>{
@@ -158,10 +158,10 @@ exports.patchPassword=async(req,res,next)=>{
         const result2 = await connection.execute(query2);
         //console.log(result2);
         //console.log("returned rows from query2: ",result2.rows);
-        res.send(result3);
+        res.status(200).send({...result3,message:"Password updated successfully!"});
     }catch(e){
         console.log("patchPassword error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Password update failed."});
     }
 };
 exports.getViewGrade=async(req,res,next)=>{
@@ -172,14 +172,14 @@ exports.getViewGrade=async(req,res,next)=>{
         //console.log("The results found in query: ");
         result.rows.forEach((row,index)=>{
             result.rows[index]=row.TERM_ID;
-        });/*
-        result.rows.sort();*/
+        });
+        // result.rows.sort();
         //console.log(result.rows);
         //console.log("returned rows from query: ",result.rows.length);
-        res.send(result);
+        res.status(200).send({...result,message:"View Grade loaded successfully!"});
     }catch(e){
         console.log("getViewGrade error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch View Grade."});
     }
 };
 exports.getShowGrade=async(req,res,next)=> {
@@ -212,10 +212,10 @@ exports.getShowGrade=async(req,res,next)=> {
         //console.log(result6.rows[0].CGPA);
         result.cgpa=result6.rows[0].CGPA/result.total_credit_hours;
         //console.log(result.cgpa);
-        res.send(result);
+        res.status(200).send({...result,message:"Show Grade loaded successfully!"});
     }catch(e){
         console.log("getShowGrade error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch Show Grade."});
     }
 };
 exports.getRegistration=async(req,res,next)=> {
@@ -227,7 +227,6 @@ exports.getRegistration=async(req,res,next)=> {
 
         if(result.rows.length==0)
         {
-
             let query2="select course_id,(select course_title from courses c where c.course_id=t.course_id) course_title,(select credit_hour from courses c where c.course_id=t.course_id) credit_hour from courseinterm t where term_id='"+req.query.term_id+"' and available_dept='"+req.query.available_dept+"'";
             const result2=await connection.execute(query2);
             //console.log("The results found in query: ");
@@ -243,10 +242,10 @@ exports.getRegistration=async(req,res,next)=> {
         //console.log("The results found in query: ");
         result.registration=false;
         //console.log(result);
-        res.send(result);
+        res.status(200).send({...result,message:"Registration loaded successfully!"});
     }catch(e){
         console.log("getRegistration error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch Registration."});
     }
 };
 exports.getRegistrationApproval=async(req,res,next)=> {
@@ -265,10 +264,10 @@ exports.getRegistrationApproval=async(req,res,next)=> {
         const result3=await connection.execute(query3);
         //console.log(result3.rows[0].CREDIT_HOURS_EARNED);
         result.credit_hours_earned=result3.rows[0].CREDIT_HOURS_EARNED;
-        res.send(result);
+        res.status(200).send({...result,message:"Registration Approval loaded successfully!"});
     }catch(e){
         console.log("getRegistrationApproval error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch Registration Approval."});
     }
 };
 exports.postInsertRegistration=async(req,res,next)=> {
@@ -282,10 +281,10 @@ exports.postInsertRegistration=async(req,res,next)=> {
             //console.log('Inserting ', result);
             const result2 = await connection.execute(query2);
             //console.log('Commiting ', result2);
-            res.status(200).send();
+            res.status(200).send({...result,message:"You have successfully registered!"});
         } catch (e) {
             console.log("postInsertRegistration error: ",e);
-            res.send(e);
+            res.status(400).send({...e,message:"Sorry! registration failed."});
         }
     }
 };

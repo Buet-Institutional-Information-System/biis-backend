@@ -7,6 +7,7 @@ const initialize=async function(){
     try{
         await database();
         connection=await oracledb.getConnection();
+        console.log("database connected");
     }
     catch(e)
     {
@@ -28,12 +29,12 @@ module.exports = async (req, res, next) => {
         console.log('token id: ',decodedToken.id);
         console.log('database id: ',result.rows[0].STUDENT_ID);
         if(decodedToken.id!==result.rows[0].STUDENT_ID){
-            return res.status(400).send("User didn't authenticated");
+            return res.status(400).send("User didn't authenticated.");
         }
         req.id = decodedToken.id;
         next();
     } catch (e) {
-        res.status(400).send("error");
+        res.status(400).send({...e,"message":"Invalid Authentication"});
     }
 
 };

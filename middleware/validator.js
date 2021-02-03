@@ -18,10 +18,10 @@ module.exports =[
             .trim()
             .isLength({min:4})
             .withMessage('Please insert valid designation'),
-        check('password','Password should not be empty, minimum eight characters, at least one letter, one number')
+        check('password','Password should not be empty, minimum five characters, at least one letter, one number')
             .trim()
             .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/i),
-        check('newpassword','Password should not be empty, minimum eight characters, at least one letter, one number')
+        check('newpassword','Password should not be empty, minimum five characters, at least one letter, one number')
         .trim()
         .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,}$/i),
         check('term_id','Please insert a valid term')
@@ -59,7 +59,7 @@ module.exports =[
                     fs.unlink(filePath, err => console.log(err));
                 }
                 console.log("validation errors: ",errors);
-                return res.status(400).send(errors);
+                return res.status(400).send({...errors,message:"Sorry! You have validation errors."});
             }
             else{
                 console.log("no error");
