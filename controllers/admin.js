@@ -33,10 +33,10 @@ exports.postStudent=async(req,res,next)=>{
         //console.log('insert ',result);
         const result2=await connection.execute(query2);
         //console.log(result2);
-        res.status(200).send();
+        res.status(200).send({message:"Insertion done!"});
     }catch(e){
         console.log("postStudent error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Insertion failed."});
     }
 }
 exports.patchUpdateGrade=async(req,res,next)=>{
@@ -48,10 +48,10 @@ exports.patchUpdateGrade=async(req,res,next)=>{
         //console.log(result);
         const result2=await connection.execute(query2);
         //console.log(result2);
-        res.status(200).send();
+        res.status(200).send({message:"Update done!"});
     }catch(e){
         console.log("patchUpdateGrade error: ",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Update failed."});
     }
 }
 exports.patchUpdatePublish=async(req,res,next)=>{
@@ -66,10 +66,10 @@ exports.patchUpdatePublish=async(req,res,next)=>{
         //console.log(result3);
         const result2=await connection.execute(query2);
         //console.log(result2);
-        res.status(200).send();
+        res.status(200).send({message:"Published!"});
     }catch(e){
         console.log("patchUpdatePublish error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Publish failed."});
     }
 }
 exports.deleteStudent=async(req,res,next)=>{
@@ -86,10 +86,10 @@ exports.deleteStudent=async(req,res,next)=>{
         clearImage(filePath);
         const result3=await connection.execute(query3);
         //console.log(result3);
-        res.status(200).send();
+        res.status(200).send({message:"Deletion done!"});
     }catch(e){
         console.log("deleteStudent error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Deletion failed."});
     }
 }
 exports.postTeacher=async(req,res,next)=>{
@@ -101,10 +101,11 @@ exports.postTeacher=async(req,res,next)=>{
         //console.log('insert ',result);
         const result2=await connection.execute(query2);
         //console.log(result2);
+        res.status(200).send({message:"Insertion done!"});
         res.status(200).send();
     }catch(e){
         console.log("postTeacher error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Insertion failed."});
     }
 }
 exports.patchUpdateDesignation=async(req,res,next)=>{
@@ -116,10 +117,10 @@ exports.patchUpdateDesignation=async(req,res,next)=>{
         //console.log(result);
         const result2=await connection.execute(query2);
         //console.log(result2);
-        res.status(200).send();
+        res.status(200).send({message:"Update successful!"});
     }catch(e){
         console.log("patchUpdateDesignation error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Update failed."});
     }
 }
 exports.deleteTeacher=async(req,res,next)=>{
@@ -134,10 +135,11 @@ exports.deleteTeacher=async(req,res,next)=>{
         //console.log(result2);
         const filePath=path.join(__dirname, '..','images','adviser',req.body.id.toString()+'.jpg')
         clearImage(filePath);
+        res.status(200).send({message:"Deletion successful!"});
         res.status(200).send();
     }catch(e){
         console.log("deleteTeacher error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Deletion failed."});
     }
 }
 exports.getEngDepts=async(req,res,next)=>{
@@ -148,10 +150,10 @@ exports.getEngDepts=async(req,res,next)=>{
         //console.log(result.rows.length);
         result.rows.forEach((c,id)=> result.rows[id]=c['DEPT_ID']);
         result.rows.sort();
-        res.send(result.rows);
+        res.status(200).send(result.rows);
     }catch(e){
         console.log("getEngDepts error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch engineering dept."});
     }
 }
 exports.getDepts=async(req,res,next)=>{
@@ -162,10 +164,10 @@ exports.getDepts=async(req,res,next)=>{
         //console.log(result.rows.length);
         result.rows.forEach((row,id)=> result.rows[id]=row.DEPT_ID);
         result.rows.sort();
-        res.send(result.rows);
+        res.status(200).send(result.rows);
     }catch(e){
         console.log("getDepts error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch dept."});
     }
 }
 exports.getTerms=async(req,res,next)=>{
@@ -178,9 +180,9 @@ exports.getTerms=async(req,res,next)=>{
         result.rows=result.rows.slice(0,4);
         //console.log(result.rows.length);
         //console.log(result.rows);
-        res.send(result.rows);
+        res.status(200).send(result.rows);
     }catch(e){
         console.log("getTerms error:",e);
-        res.send(e);
+        res.status(400).send({...e,message:"Could not fetch term."});
     }
 }
