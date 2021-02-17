@@ -3,3 +3,4 @@ PreviousServer.js
 node_modules
 images/*
 .idea/*
+config/*
