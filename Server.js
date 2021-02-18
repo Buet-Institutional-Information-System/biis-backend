@@ -13,8 +13,8 @@ app.use(cors());
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 app.use('/admin',adminRoutes);
 app.use('/', userRoutes);
-app.listen(process.env.port, function () {
-    console.log("App listening with taaha at http://localhost:",process.env.port)
+app.listen(process.env.PORT, function () {
+    console.log("App listening with taaha at port ",process.env.PORT)
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
