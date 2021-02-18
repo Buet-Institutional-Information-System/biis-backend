@@ -70,8 +70,8 @@ exports.deleteStudent=async(req,res,next)=>{
         //console.log('delete ',result);
         const result2=await connection.query(query2);
         //console.log(result2);
-        const filePath=path.join(__dirname, '..','images','student',req.body.id.toString()+'.jpg')
-        clearImage(filePath);
+        // const filePath=path.join(__dirname, '..','images','student',req.body.id.toString()+'.jpg')
+        // clearImage(filePath);
         const result3=await connection.query(query3);
         //console.log(result3);
         return res.status(200).send({message:"Deletion done!"});
@@ -120,8 +120,8 @@ exports.deleteTeacher=async(req,res,next)=>{
         //console.log('delete ',result);
         const result2=await connection.query(query2);
         //console.log(result2);
-        const filePath=path.join(__dirname, '..','images','adviser',req.body.id.toString()+'.jpg')
-        clearImage(filePath);
+        //const filePath=path.join(__dirname, '..','images','adviser',req.body.id.toString()+'.jpg')
+        //clearImage(filePath);
         return res.status(200).send({message:"Deletion successful!"});
     }catch(e){
         console.log("deleteTeacher error:",e);
