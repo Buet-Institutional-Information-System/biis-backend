@@ -26,7 +26,7 @@ exports.postSignIn = async (req, res, next) => {
                     id: result[0].student_id,
                     name: result[0].student_name
                 },
-                process.env.private_key,
+                process.env.PRIVATE_KEY,
             );
             result.token=token;
             console.log("postSignIn result: ",result);

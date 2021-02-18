@@ -5,7 +5,7 @@ module.exports = async (req, res, next) => {
     //console.log('token: ',token);
     let decodedToken;
     try {
-        decodedToken = await jwt.verify(token, process.env.private_key);
+        decodedToken = await jwt.verify(token, process.env.PRIVATE_KEY);
         if (!decodedToken) {
             return res.status(400).send("Not authenticated");
         }
